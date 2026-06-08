@@ -94,11 +94,22 @@ GET /api/patent/JP4819386B2
   ],
 
   "english_assignees": [
-    {
-      "assignee": "Samsung Electronics Co Ltd",
-      "assignee_english": "Samsung Electronics Co Ltd"
-    }
-  ]
+  {
+    "assignee": "Samsung Electronics Co Ltd",
+    "assignee_english": "Samsung Electronics Co Ltd"
+  }
+],
+
+"forward_citation_assignees": [
+  "浪潮商用机器有限公司"
+],
+
+"english_forward_citation_assignees": [
+  {
+    "assignee": "浪潮商用机器有限公司",
+    "assignee_english": "Inspur Commercial Machinery Co., Ltd."
+  }
+]
 }
 ```
 
@@ -115,6 +126,13 @@ The endpoint preserves the original patent response while enriching it with Engl
 * Backward citation assignees
 * Citation family assignees
 * Legal event owner names
+* Forward citation assignee list translation
+* Forward citation translation
+* Backward citation translation
+* Citation family translation
+* Generic field translation support
+* Generic list translation support
+* Preservation of original response ordering
 
 Additional patent metadata is preserved from the original Wissen Research Patent API response.
 

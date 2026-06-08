@@ -24,9 +24,15 @@ A Flask-based application that provides language detection, text translation, an
 * Translation of assignee names in forward citations
 * Translation of assignee names in backward citations
 * Translation of assignee names in citation family records
-* Translation of legal event owner names
+* Translation of legal event description fields (when applicable)
 * Preservation of original patent metadata
 * Enriched responses with translated English equivalents
+* Translation of forward citation assignee lists
+* Translation of patent citation assignees while preserving original metadata
+* Generic field translation framework
+* Generic list translation framework
+* Environment variable configuration for external patent API integration
+* Service-based translation architecture
 
 ## API Endpoints
 
@@ -65,6 +71,7 @@ Returns:
 lang-translator/
 │
 ├── app.py
+│
 ├── routes/
 │   ├── web_routes.py
 │   ├── translate_routes.py
@@ -77,8 +84,18 @@ lang-translator/
 ├── templates/
 ├── static/
 ├── .env
+├── requirements.txt
 ├── README.md
 └── API_DOCS.md
+```
+## Architecture
+
+The application follows a route-service architecture:
+
+* Routes handle HTTP requests and responses.
+* Services contain translation and patent-processing logic.
+* Environment variables are used for external API configuration.
+* Translation behavior is driven through reusable translation mappings for easier future expansion.
 
 ## Technologies Used
 
