@@ -1,14 +1,11 @@
 from services.patent_service import (
-    translate_citations
-)
-from services.patent_service import (
-    translate_citations,
-    translate_npl_citations
-)
-from services.patent_service import (
     translate_citations,
     translate_npl_citations,
-    translate_legal_events
+    translate_legal_events,
+    TRANSLATABLE_FIELDS,
+    TRANSLATABLE_LIST_FIELDS,
+    translate_field,
+    translate_list_field
 )
 
 from flask import jsonify
@@ -16,11 +13,6 @@ from app import app
 import requests
 from collections import OrderedDict
 import os
-
-from services.translator_service import (
-    translate_to_english,
-    translate_list
-)
 
 from dotenv import load_dotenv
 
@@ -48,26 +40,6 @@ def patent_translate(patent_id):
             }), 404
 
         patent_data = response.json()
-
-        inventors = patent_data.get(
-            "inventors",
-            []
-        )
-
-        assignees = patent_data.get(
-            "assignees",
-            []
-        )
-
-        forward_citations_translated = []
-        backward_citations_translated = []
-
-        forward_citations_only_translated = []
-        backward_citations_only_translated = []
-
-        npl_citations_translated = []
-
-        legal_events_translated = []
 
         forward_citations_translated = (
             translate_citations(
@@ -130,82 +102,53 @@ def patent_translate(patent_id):
 
         response_data["patent_id"] = patent_id
 
+        SPECIAL_FIELDS = {
+
+            "legal_events":
+                legal_events_translated,
+
+            "forward_citations":
+                forward_citations_only_translated,
+
+            "forward_citations_family":
+                forward_citations_translated,
+
+            "backward_citations":
+                backward_citations_only_translated,
+
+            "backward_citations_family":
+                backward_citations_translated,
+
+            "npl_citation":
+                npl_citations_translated
+        }
+
         for key, value in patent_data.items():
 
             response_data[key] = value
 
-            if key == "title":
+            if key in TRANSLATABLE_FIELDS:
 
-                response_data["english_title"] = (
-                    translate_to_english(
-                        value or ""
+                response_data[
+                    f"english_{key}"
+                ] = translate_field(
+                    value
+                )
+
+            elif key in TRANSLATABLE_LIST_FIELDS:
+
+                response_data.update(
+
+                    translate_list_field(
+                        key,
+                        value
                     )
                 )
 
+            elif key in SPECIAL_FIELDS:
 
-            elif key == "assignees":
-
-                response_data["english_assignees"] = (
-                    translate_list(
-                        assignees
-                    )
-                )
-
-            elif key == "inventors":
-
-                response_data["english_inventors"] = [
-                    {
-                        "inventor": inventor,
-                        "inventor_english": 
-                            translate_to_english(
-                                inventor
-                            )
-                    }
-                    for inventor in inventors
-                ]
-
-            elif key == "applicant":
-
-                response_data["english_applicant"] = (
-                    translate_to_english(
-                        value or ""
-                    )
-                )
-
-            elif key == "legal_events":
-
-                response_data["legal_events"] = (
-                    legal_events_translated
-                )
-
-            elif key == "forward_citations":
-
-                response_data["forward_citations"] = (
-                    forward_citations_only_translated
-                )
-
-            elif key == "forward_citations_family":
-
-                response_data["forward_citations_family"] = (
-                    forward_citations_translated
-                )
-
-            elif key == "backward_citations":
-
-                response_data["backward_citations"] = (
-                    backward_citations_only_translated
-                )
-
-            elif key == "backward_citations_family":
-
-                response_data["backward_citations_family"] = (
-                    backward_citations_translated
-                )
-
-            elif key == "npl_citation":
-
-                response_data["npl_citation"] = (
-                    npl_citations_translated
+                response_data[key] = (
+                    SPECIAL_FIELDS[key]
                 )
 
         return jsonify(response_data)

@@ -2,6 +2,16 @@ from services.translator_service import (
     translate_to_english
 )
 
+TRANSLATABLE_FIELDS = [
+    "title",
+    "applicant"
+]
+
+TRANSLATABLE_LIST_FIELDS = [
+    "inventors",
+    "assignees"
+]
+
 def translate_citations(citations):
 
     translated = []
@@ -132,3 +142,56 @@ def translate_legal_events(events):
         })
 
     return translated
+
+def translate_field(value):
+
+    return translate_to_english(
+        value or ""
+    )
+
+
+def translate_inventors(inventors):
+
+    return [
+        {
+            "inventor": inventor,
+            "inventor_english":
+                translate_to_english(
+                    inventor
+                )
+        }
+        for inventor in inventors
+    ]
+
+def translate_assignees(assignees):
+
+    return [
+        {
+            "assignee": assignee,
+
+            "assignee_english":
+                translate_to_english(
+                    assignee
+                )
+        }
+
+        for assignee in assignees
+    ]
+
+def translate_list_field(field_name, items):
+
+    if field_name == "inventors":
+
+        return {
+            "english_inventors":
+                translate_inventors(items)
+        }
+
+    if field_name == "assignees":
+
+        return {
+            "english_assignees":
+                translate_assignees(items)
+        }
+
+    return {}
