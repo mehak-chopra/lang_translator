@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from services.translator_service import (
     translate_to_english
 )
@@ -9,7 +10,8 @@ TRANSLATABLE_FIELDS = [
 
 TRANSLATABLE_LIST_FIELDS = [
     "inventors",
-    "assignees"
+    "assignees",
+    "forward_citation_assignees"
 ]
 
 def translate_citations(citations):
@@ -18,40 +20,26 @@ def translate_citations(citations):
 
     for citation in citations:
 
+        translated_citation = dict(
+            citation
+        )
+
         assignee = citation.get(
             "assignee",
             ""
         )
 
-        translated.append({
+        translated_citation[
+            "english_assignee"
+        ] = translate_to_english(
+            assignee
+        )
 
-            "patent_number": citation.get(
-                "patent_number"
-            ),
-
-            "priority_date": citation.get(
-                "priority_date"
-            ),
-
-            "pub_date": citation.get(
-                "pub_date"
-            ),
-
-            "examiner_cited": citation.get(
-                "examiner_cited"
-            ),
-
-            "assignee": assignee,
-
-            "english_assignee":
-                translate_to_english(
-                    assignee
-                )
-        })
+        translated.append(
+            translated_citation
+        )
 
     return translated
-
-from collections import OrderedDict
 
 def translate_npl_citations(citations):
 
@@ -66,24 +54,20 @@ def translate_npl_citations(citations):
 
         translated_citation = OrderedDict()
 
-        translated_citation["title"] = title
+        for key, value in citation.items():
 
-        translated_citation["english_title"] = (
-            translate_to_english(title)
-            if title else ""
-        )
+            translated_citation[key] = value
 
-        translated_citation["cited_by_examiner"] = (
-            citation.get(
-                "cited_by_examiner"
-            )
-        )
+            if key == "title":
 
-        translated_citation["cited_by_third_party"] = (
-            citation.get(
-                "cited_by_third_party"
-            )
-        )
+                translated_citation[
+                    "english_title"
+                ] = (
+                    translate_to_english(
+                        title
+                    )
+                    if title else ""
+                )
 
         translated.append(
             translated_citation
@@ -97,49 +81,38 @@ def translate_legal_events(events):
 
     for event in events:
 
+        translated_event = dict(
+            event
+        )
+
         description = event.get(
             "description"
         ) or {}
 
-        owner_name = description.get(
-            "owner_name",
-            ""
-        )
+        translated_description = OrderedDict()
 
-        translated.append({
+        for key, value in description.items():
 
-            "date": event.get(
-                "date"
-            ),
+            translated_description[key] = value
 
-            "code": event.get(
-                "code"
-            ),
+            if key == "owner_name":
 
-            "title": event.get(
-                "title"
-            ),
-
-            "description": {
-
-                "owner_name": owner_name,
-
-                "owner_name_english":
+                translated_description[
+                    "owner_name_english"
+                ] = (
                     translate_to_english(
-                        owner_name
-                    ) if owner_name else "",
-
-                "free_format_text":
-                    description.get(
-                        "free_format_text"
-                    ),
-
-                "effective_date":
-                    description.get(
-                        "effective_date"
+                        value
                     )
-            }
-        })
+                    if value else ""
+                )
+
+        translated_event[
+            "description"
+        ] = translated_description
+
+        translated.append(
+            translated_event
+        )
 
     return translated
 
@@ -148,7 +121,6 @@ def translate_field(value):
     return translate_to_english(
         value or ""
     )
-
 
 def translate_inventors(inventors):
 
@@ -178,20 +150,40 @@ def translate_assignees(assignees):
         for assignee in assignees
     ]
 
-def translate_list_field(field_name, items):
+LIST_TRANSLATORS = {
 
-    if field_name == "inventors":
+    "inventors": (
+        "english_inventors",
+        translate_inventors
+    ),
 
-        return {
-            "english_inventors":
-                translate_inventors(items)
-        }
+    "assignees": (
+        "english_assignees",
+        translate_assignees
+    ),
 
-    if field_name == "assignees":
+    "forward_citation_assignees": (
+        "english_forward_citation_assignees",
+        translate_assignees
+    )
+}
 
-        return {
-            "english_assignees":
-                translate_assignees(items)
-        }
+def translate_list_field(
+    field_name,
+    items
+):
 
-    return {}
+    if field_name not in LIST_TRANSLATORS:
+
+        return {}
+
+    output_key, translator = (
+        LIST_TRANSLATORS[
+            field_name
+        ]
+    )
+
+    return {
+        output_key:
+            translator(items)
+    }

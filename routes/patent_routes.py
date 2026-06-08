@@ -22,7 +22,6 @@ PATENT_API_BASE_URL = os.getenv(
     "PATENT_API_BASE_URL"
 )
 
-
 @app.route("/api/patent/<patent_id>", methods=["GET"])
 def patent_translate(patent_id):
 
