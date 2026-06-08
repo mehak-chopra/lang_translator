@@ -59,6 +59,27 @@ Returns:
 * Translated citation information
 * Translated legal event information
 
+## Project Structure
+
+```text
+lang-translator/
+│
+├── app.py
+├── routes/
+│   ├── web_routes.py
+│   ├── translate_routes.py
+│   └── patent_routes.py
+│
+├── services/
+│   ├── translator_service.py
+│   └── patent_service.py
+│
+├── templates/
+├── static/
+├── .env
+├── README.md
+└── API_DOCS.md
+
 ## Technologies Used
 
 * Flask
